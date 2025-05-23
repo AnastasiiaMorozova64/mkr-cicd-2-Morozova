@@ -75,3 +75,50 @@ def test_image_detail_view(client, setup_categories):
 def test_image_detail_view_not_found(client):
     response = client.get(reverse('gallery:image_detail', args=[999]))
     assert response.status_code == 404
+
+
+@pytest.fixture
+def client():
+    return Client()
+
+@pytest.fixture
+def setup_image():
+    category = Category.objects.create(name="Природа")
+    image = Image.objects.create(
+        title="Тестове зображення",
+        image="gallery_images/test_image.jpg",
+        created_date=date(2025, 5, 23),
+        age_limit=18
+    )
+    image.categories.add(category)
+    return image
+
+@pytest.mark.django_db
+def test_image_detail_status_code(client, setup_image):
+    """Перевіряє, чи повертає image_detail статус 200 для існуючого зображення"""
+    response = client.get(reverse('gallery:image_detail', args=[setup_image.id]))
+    assert response.status_code == 200
+
+@pytest.mark.django_db
+def test_image_detail_template(client, setup_image):
+    """Перевіряє, чи використовується правильний шаблон image_detail.html"""
+    response = client.get(reverse('gallery:image_detail', args=[setup_image.id]))
+    assert 'image_detail.html' in [t.name for t in response.templates]
+
+@pytest.mark.django_db
+def test_image_detail_context(client, setup_image):
+    """Перевіряє, чи передається правильний об’єкт image в контексті"""
+    response = client.get(reverse('gallery:image_detail', args=[setup_image.id]))
+    assert 'image' in response.context
+    image = response.context['image']
+    assert image.title == "Тестове зображення"
+    assert image.age_limit == 18
+    assert image.created_date == date(2025, 5, 23)
+    assert image.categories.count() == 1
+    assert image.categories.first().name == "Природа"
+
+@pytest.mark.django_db
+def test_image_detail_not_found(client):
+    """Перевіряє, чи повертає image_detail статус 404 для неіснуючого зображення"""
+    response = client.get(reverse('gallery:image_detail', args=[999]))
+    assert response.status_code == 404
