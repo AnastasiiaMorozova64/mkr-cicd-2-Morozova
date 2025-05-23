@@ -1,7 +1,7 @@
 """
 URL configuration for project_gallery project.
 
-The `urlpatterns` list routes URLs to views. For more information please see:
+The urlpatterns list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/4.2/topics/http/urls/
 Examples:
 Function views
@@ -17,11 +17,12 @@ Including another URLconf
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from gallery import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', include('gallery.urls')),
     path('', views.gallery_view, name='main'),
     path('image/<int:pk>/', views.image_detail, name='image_detail'),
 ]
